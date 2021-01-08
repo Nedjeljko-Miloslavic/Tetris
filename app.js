@@ -1,6 +1,7 @@
 var canvas = document.querySelector("canvas");
 const X = 300;
 const Y = 500;
+var game = true;
 
 canvas.height = Y;
 canvas.width = X;
@@ -131,58 +132,46 @@ document.addEventListener("keydown", (event)=>{
 			}
 		}
 		
-		if(largest){
-			let arr_pocetni = shape1.arr;
-			let shape_test_1 = new Shape(shape1.x, shape1.y, shapes[index_i][0]);
-			let shape_test_2 = new Shape(shape1.x-50, shape1.y, shapes[index_i][0]);
-			let shape_test_3 = new Shape(shape1.x-100, shape1.y, shapes[index_i][0]);
-			let shape_test_4 = new Shape(shape1.x-150, shape1.y, shapes[index_i][0]);
-			if(shape_test_1.check().collision == "ok"){
-				shape1 = shape_test_1;
-			}else if(shape_test_2.check().collision == "ok"){
-				shape1 = shape_test_2;
-			}else if(shape_test_3.check().collision == "ok"){
-				shape1 = shape_test_3;
-			}
-			else if(shape_test_4.check().collision == "ok"){
-				shape1 = shape_test_4;
-			}
-			let arr_zavrsni = shape1.arr;
-			if(arr_pocetni.length!=arr_zavrsni.length){
-				let diff = arr_pocetni.length - arr_zavrsni.length;
-				shape1.y += diff*50;
-			}
-			console.log(shape1.check().collision);
-		}else{
-			let arr_pocetni = shape1.arr;
-			let shape_test_1 = new Shape(shape1.x, shape1.y, shapes[index_i][index_j+1]);
-			let shape_test_2 = new Shape(shape1.x-50, shape1.y, shapes[index_i][index_j+1]);
-			let shape_test_3 = new Shape(shape1.x-100, shape1.y, shapes[index_i][index_j+1]);
-			let shape_test_4 = new Shape(shape1.x-150, shape1.y, shapes[index_i][index_j+1]);
-			if(shape_test_1.check().collision == "ok"){
-				shape1 = shape_test_1;
-			}else if(shape_test_2.check().collision == "ok"){
-				shape1 = shape_test_2;
-			}else if(shape_test_3.check().collision == "ok"){
-				shape1 = shape_test_3;
-			}else if(shape_test_4.check().collision == "ok"){
-				shape1 = shape_test_4;
-			}
-			let arr_zavrsni = shape1.arr;
-			if(arr_pocetni.length!=arr_zavrsni.length){
-				let diff = arr_pocetni.length - arr_zavrsni.length;
-				shape1.y += diff*50;
-			}
-			console.log(shape1.check().collision);
-		}
+		flip(index_i, index_j, largest);
 	}
 });
 
+function flip(index_i, index_j, largest){
+	let current_shape_arr = shape1.arr;
+	let next_shape_arr;
+	
+	if(largest){
+		next_shape_arr = shapes[index_i][0];		
+	}else{
+		next_shape_arr = shapes[index_i][index_j+1];
+	}
+
+	let diff = current_shape_arr.length - next_shape_arr.length;
+	let shape_test_1 = new Shape(shape1.x, shape1.y+diff*50, next_shape_arr);
+	let shape_test_2 = new Shape(shape1.x-50, shape1.y+diff*50, next_shape_arr);
+	let shape_test_3 = new Shape(shape1.x-50*2, shape1.y+diff*50, next_shape_arr);
+	let shape_test_4 = new Shape(shape1.x-50*3, shape1.y+diff*50, next_shape_arr);
+		
+	if(shape_test_1.check().collision == "ok"){
+		shape1 = shape_test_1;
+	}else if(shape_test_2.check().collision == "ok"){
+		shape1 = shape_test_2;
+	}else if(shape_test_3.check().collision == "ok"){
+		shape1 = shape_test_3;
+	}else if(shape_test_4.check().collision == "ok"){
+		shape1 = shape_test_4;
+	}
+}
 
 
 function animate_fall(){
 	setTimeout(function(){
-		requestAnimationFrame(animate_fall);
+		if(game){
+			requestAnimationFrame(animate_fall);
+		}else{
+			console.log("game over");
+		}
+		
 		if(shape1.check().down=="ok"){
 			shape1.y += 50;
 		}
@@ -190,14 +179,21 @@ function animate_fall(){
 			setTimeout(function(){
 				let arr = shape1.arr;
 				let shape = shape1;
-				for(let i=0; i<arr.length; i++){
-					for(let j=0; j<arr[i].length; j++){
-						if(arr[i][j]==1){
-							container[i+shape.y/50][j+shape.x/50+1] = 1;							
+				
+				if(shape1.check().down=="block"){
+					for(let i=0; i<arr.length; i++){
+						for(let j=0; j<arr[i].length; j++){
+							if(arr[i][j]==1){
+								container[i+shape.y/50][j+shape.x/50+1] = 1;							
+							}
 						}
 					}
 				}
+				
 				shape1 = new Shape(0,0, shapes[Math.floor(Math.random()*7)][0]);
+				if(shape1.check().collision == "block"){
+					game = false;
+				}
 			}, 1000);
 			
 		}
@@ -205,7 +201,7 @@ function animate_fall(){
 	},1000);
 }
 
-animate_fall();
+
 
 function animate_draw(){
 	requestAnimationFrame(animate_draw);
@@ -225,4 +221,26 @@ function animate_draw(){
 	}
 }
 
+function score(){
+	requestAnimationFrame(score);
+	let counter = 0;
+	for(let i=0; i<container.length-1; i++){
+		let test = true;
+		for(let j=1; j<container[i].length-1; j++){
+			if(container[i][j]==0){
+				test=false;
+			}
+		}
+		if(test==true){
+			for(let k=i; k>1; k--){
+				container[k] = container[k-1];
+			}
+			container[0] = container_construct(X,Y).frame;
+		}
+	}
+}
+
+
+animate_fall();
 animate_draw();
+score();
