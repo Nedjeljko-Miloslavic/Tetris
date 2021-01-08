@@ -2,6 +2,7 @@ var canvas = document.querySelector("canvas");
 const X = 300;
 const Y = 500;
 var game = true;
+console.log("press m to flip");
 
 canvas.height = Y;
 canvas.width = X;
