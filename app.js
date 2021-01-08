@@ -138,7 +138,6 @@ document.addEventListener("keydown", (event)=>{
 
 function flip(index_i, index_j, largest){
 	let current_shape_arr = shape1.arr;
-	let shape_test = shape1;
 	let next_shape_arr;
 	
 	if(largest){
@@ -181,13 +180,16 @@ function animate_fall(){
 				let arr = shape1.arr;
 				let shape = shape1;
 				
-				for(let i=0; i<arr.length; i++){
-					for(let j=0; j<arr[i].length; j++){
-						if(arr[i][j]==1){
-							container[i+shape.y/50][j+shape.x/50+1] = 1;							
+				if(shape1.check().down=="block"){
+					for(let i=0; i<arr.length; i++){
+						for(let j=0; j<arr[i].length; j++){
+							if(arr[i][j]==1){
+								container[i+shape.y/50][j+shape.x/50+1] = 1;							
+							}
 						}
 					}
 				}
+				
 				shape1 = new Shape(0,0, shapes[Math.floor(Math.random()*7)][0]);
 				if(shape1.check().collision == "block"){
 					game = false;
@@ -221,6 +223,7 @@ function animate_draw(){
 
 function score(){
 	requestAnimationFrame(score);
+	let counter = 0;
 	for(let i=0; i<container.length-1; i++){
 		let test = true;
 		for(let j=1; j<container[i].length-1; j++){
@@ -229,7 +232,10 @@ function score(){
 			}
 		}
 		if(test==true){
-			console.log("bravo", i);
+			for(let k=i; k>1; k--){
+				container[k] = container[k-1];
+			}
+			container[0] = container_construct(X,Y).frame;
 		}
 	}
 }
